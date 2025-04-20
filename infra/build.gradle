@@ -1,0 +1,9 @@
+dependencies {
+    implementation project(':core')
+    implementation project(':common')
+    implementation 'io.github.openfeign:feign-jackson:11.9.1'
+}
+
+bootJar {
+    enabled = false
+}

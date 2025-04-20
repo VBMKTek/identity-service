@@ -1,0 +1,12 @@
+sonar {
+    properties {
+        property 'sonar.sources', 'src/main'
+        property 'sonar.projectKey', "${group}:${project.name}"
+        property 'sonar.projectName', "${project.name}"
+        property 'sonar.gradle.skipCompile', 'true'
+        // Uncomment when SonarQube is set up
+        // property 'sonar.host.url', 'http://localhost:9000'
+        // property 'sonar.login', System.getenv('SONAR_TOKEN') ?: project.findProperty('sonar.login')
+        // property 'sonar.coverage.jacoco.xmlReportPaths', "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
+    }
+}
