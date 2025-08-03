@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+                   http://www.liquibase.org/xml/ns/dbchangelog-ext
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!-- Insert initial groups -->
+    <changeSet id="20250803000014-insert-initial-groups" author="identity-service">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="groups"/>
+        </preConditions>
+        
+        <insert tableName="groups">
+            <column name="group_id" valueComputed="uuid_generate_v4()"/>
+            <column name="group_name" value="administrators"/>
+            <column name="description" value="System administrators group with full access"/>
+            <column name="created_at" valueComputed="current_timestamp"/>
+            <column name="updated_at" valueComputed="current_timestamp"/>
+        </insert>
+        
+        <insert tableName="groups">
+            <column name="group_id" valueComputed="uuid_generate_v4()"/>
+            <column name="group_name" value="managers"/>
+            <column name="description" value="Managers group with user management capabilities"/>
+            <column name="created_at" valueComputed="current_timestamp"/>
+            <column name="updated_at" valueComputed="current_timestamp"/>
+        </insert>
+        
+        <insert tableName="groups">
+            <column name="group_id" valueComputed="uuid_generate_v4()"/>
+            <column name="group_name" value="users"/>
+            <column name="description" value="Regular users group with basic access"/>
+            <column name="created_at" valueComputed="current_timestamp"/>
+            <column name="updated_at" valueComputed="current_timestamp"/>
+        </insert>
+    </changeSet>
+
+    <!-- Assign roles to administrators group -->
+    <changeSet id="20250803000015-assign-admin-group-roles" author="identity-service">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="group_roles"/>
+        </preConditions>
+        
+        <sql>
+            INSERT INTO group_roles (group_id, role_id, assigned_at)
+            SELECT g.group_id, r.role_id, current_timestamp
+            FROM groups g, roles r
+            WHERE g.group_name = 'administrators' AND r.role_name = 'ADMIN';
+        </sql>
+    </changeSet>
+
+    <!-- Assign roles to managers group -->
+    <changeSet id="20250803000016-assign-manager-group-roles" author="identity-service">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="group_roles"/>
+        </preConditions>
+        
+        <sql>
+            INSERT INTO group_roles (group_id, role_id, assigned_at)
+            SELECT g.group_id, r.role_id, current_timestamp
+            FROM groups g, roles r
+            WHERE g.group_name = 'managers' AND r.role_name = 'MANAGER';
+        </sql>
+    </changeSet>
+
+    <!-- Assign roles to users group -->
+    <changeSet id="20250803000017-assign-user-group-roles" author="identity-service">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="group_roles"/>
+        </preConditions>
+        
+        <sql>
+            INSERT INTO group_roles (group_id, role_id, assigned_at)
+            SELECT g.group_id, r.role_id, current_timestamp
+            FROM groups g, roles r
+            WHERE g.group_name = 'users' AND r.role_name = 'USER';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

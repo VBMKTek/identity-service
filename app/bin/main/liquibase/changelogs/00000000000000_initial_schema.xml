@@ -1,0 +1,68 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <changeSet id="22022024-1708535438251-create-role-table" author="loi.vuu">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="role"/>
+                <indexExists indexName="idx_role_name"/>
+                <indexExists indexName="idx_role_code"/>
+            </not>
+        </preConditions>
+        <createTable tableName="role">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="code" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="created_by" type="varchar(255)"/>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_by" type="varchar(255)"/>
+            <column name="updated_at" type="datetime"/>
+        </createTable>
+
+        <createIndex tableName="role" indexName="idx_role_name">
+            <column name="name"/>
+        </createIndex>
+        <createIndex tableName="role" indexName="idx_role_code">
+            <column name="code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="22022024-1708535438251-create-permission-table" author="loi.vuu">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="permission"/>
+                <indexExists indexName="idx_permission_name"/>
+                <indexExists indexName="idx_permission_code"/>
+            </not>
+        </preConditions>
+        <createTable tableName="permission">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="role_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="code" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="created_by" type="varchar(255)"/>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_by" type="varchar(255)"/>
+            <column name="updated_at" type="datetime"/>
+        </createTable>
+
+        <createIndex tableName="permission" indexName="idx_permission_name">
+            <column name="name"/>
+        </createIndex>
+        <createIndex tableName="permission" indexName="idx_permission_code">
+            <column name="code"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

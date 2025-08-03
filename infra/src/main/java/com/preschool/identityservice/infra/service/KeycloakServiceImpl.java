@@ -8,7 +8,7 @@ import com.preschool.identityservice.core.data.GroupData;
 import com.preschool.identityservice.core.data.OperationData;
 import com.preschool.identityservice.core.data.RoleData;
 import com.preschool.identityservice.core.data.UserData;
-import com.preschool.identityservice.core.service.infra.KeycloakService;
+import com.preschool.identityservice.core.service.infra.ExternalIdentityProviderService;
 import com.preschool.identityservice.infra.mapper.AccessTokenMapper;
 import com.preschool.identityservice.infra.mapper.KeycloakMapper;
 import jakarta.ws.rs.core.Response;
@@ -34,7 +34,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class KeycloakServiceImpl implements KeycloakService {
+public class KeycloakServiceImpl implements ExternalIdentityProviderService {
     private final KeycloakProperties keycloakProperties;
     private final KeycloakBuilder keycloakBuilder;
     private final Keycloak keycloak;

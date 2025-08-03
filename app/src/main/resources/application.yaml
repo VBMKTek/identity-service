@@ -46,11 +46,39 @@ logging:
     root: INFO
     com.preschool: ${APPLICATION_LOG_LEVEL:DEBUG}
 
+# Actuator and Prometheus configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      sla:
+        http.server.requests: 50ms,100ms,200ms,300ms,500ms,1s,2s,5s,10s
+
 application:
   sensitive:
     fields: ${SENSITIVE_FIELDS:password,pwd}
     hide-type: ${HIDE_TYPE:PARTIAL}
     hide-characters: ${HIDE_CHARACTERS:5}
+  jwt:
+    secret: ${JWT_SECRET:myVerySecretKeyForJWTToken1234567890}
+    access-token-expiration: ${JWT_ACCESS_EXPIRATION:60}
+    refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:7}
+    issuer: ${JWT_ISSUER:identity-service}
   keycloak:
     realm: ${KEYCLOAK_REALMS:preschool_be_sit}
     auth-server-url: ${PROTOCOL:http}://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:28080}

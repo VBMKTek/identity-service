@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+                   http://www.liquibase.org/xml/ns/dbchangelog-ext
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!-- Insert initial permissions -->
+    <changeSet id="20250803000006-insert-initial-permissions" author="identity-service">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="permissions"/>
+        </preConditions>
+        
+        <insert tableName="permissions">
+            <column name="permission_id" valueComputed="uuid_generate_v4()"/>
+            <column name="permission_name" value="READ_USER"/>
+            <column name="description" value="Permission to read user information"/>
+            <column name="created_at" valueComputed="current_timestamp"/>
+            <column name="updated_at" valueComputed="current_timestamp"/>
+        </insert>
+        
+        <insert tableName="permissions">
+            <column name="permission_id" valueComputed="uuid_generate_v4()"/>
+            <column name="permission_name" value="WRITE_USER"/>
+            <column name="description" value="Permission to create and update user information"/>
+            <column name="created_at" valueComputed="current_timestamp"/>
+            <column name="updated_at" valueComputed="current_timestamp"/>
+        </insert>
+        
+        <insert tableName="permissions">
+            <column name="permission_id" valueComputed="uuid_generate_v4()"/>
+            <column name="permission_name" value="DELETE_USER"/>
+            <column name="description" value="Permission to delete user information"/>
+            <column name="created_at" valueComputed="current_timestamp"/>
+            <column name="updated_at" valueComputed="current_timestamp"/>
+        </insert>
+        
+        <insert tableName="permissions">
+            <column name="permission_id" valueComputed="uuid_generate_v4()"/>
+            <column name="permission_name" value="MANAGE_ROLES"/>
+            <column name="description" value="Permission to manage roles and permissions"/>
+            <column name="created_at" valueComputed="current_timestamp"/>
+            <column name="updated_at" valueComputed="current_timestamp"/>
+        </insert>
+    </changeSet>
+
+    <!-- Insert initial roles -->
+    <changeSet id="20250803000007-insert-initial-roles" author="identity-service">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="roles"/>
+        </preConditions>
+        
+        <insert tableName="roles">
+            <column name="role_id" valueComputed="uuid_generate_v4()"/>
+            <column name="role_name" value="ADMIN"/>
+            <column name="description" value="System administrator with full access"/>
+            <column name="created_at" valueComputed="current_timestamp"/>
+            <column name="updated_at" valueComputed="current_timestamp"/>
+        </insert>
+        
+        <insert tableName="roles">
+            <column name="role_id" valueComputed="uuid_generate_v4()"/>
+            <column name="role_name" value="USER"/>
+            <column name="description" value="Regular user with limited access"/>
+            <column name="created_at" valueComputed="current_timestamp"/>
+            <column name="updated_at" valueComputed="current_timestamp"/>
+        </insert>
+        
+        <insert tableName="roles">
+            <column name="role_id" valueComputed="uuid_generate_v4()"/>
+            <column name="role_name" value="MANAGER"/>
+            <column name="description" value="Manager with user management access"/>
+            <column name="created_at" valueComputed="current_timestamp"/>
+            <column name="updated_at" valueComputed="current_timestamp"/>
+        </insert>
+    </changeSet>
+
+    <!-- Assign permissions to ADMIN role -->
+    <changeSet id="20250803000008-assign-admin-permissions" author="identity-service">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="role_permissions"/>
+        </preConditions>
+        
+        <sql>
+            INSERT INTO role_permissions (role_id, permission_id, assigned_at)
+            SELECT r.role_id, p.permission_id, current_timestamp
+            FROM roles r, permissions p
+            WHERE r.role_name = 'ADMIN';
+        </sql>
+    </changeSet>
+
+    <!-- Assign basic permissions to USER role -->
+    <changeSet id="20250803000009-assign-user-permissions" author="identity-service">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="role_permissions"/>
+        </preConditions>
+        
+        <sql>
+            INSERT INTO role_permissions (role_id, permission_id, assigned_at)
+            SELECT r.role_id, p.permission_id, current_timestamp
+            FROM roles r, permissions p
+            WHERE r.role_name = 'USER' AND p.permission_name = 'READ_USER';
+        </sql>
+    </changeSet>
+
+    <!-- Assign manager permissions to MANAGER role -->
+    <changeSet id="20250803000010-assign-manager-permissions" author="identity-service">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="role_permissions"/>
+        </preConditions>
+        
+        <sql>
+            INSERT INTO role_permissions (role_id, permission_id, assigned_at)
+            SELECT r.role_id, p.permission_id, current_timestamp
+            FROM roles r, permissions p
+            WHERE r.role_name = 'MANAGER' AND p.permission_name IN ('READ_USER', 'WRITE_USER');
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

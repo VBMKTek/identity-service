@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+                   http://www.liquibase.org/xml/ns/dbchangelog-ext
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!-- Create Groups table -->
+    <changeSet id="20250803000011-create-groups-table" author="identity-service">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="groups"/>
+            </not>
+        </preConditions>
+        <createTable tableName="groups">
+            <column name="group_id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="group_name" type="varchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="text">
+                <constraints nullable="true"/>
+            </column>
+            <column name="keycloak_id" type="varchar(36)">
+                <constraints nullable="true" unique="true"/>
+            </column>
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <createIndex tableName="groups" indexName="idx_groups_group_name">
+            <column name="group_name"/>
+        </createIndex>
+        <createIndex tableName="groups" indexName="idx_groups_keycloak_id">
+            <column name="keycloak_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Create User_Groups table -->
+    <changeSet id="20250803000012-create-user-groups-table" author="identity-service">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_groups"/>
+            </not>
+        </preConditions>
+        <createTable tableName="user_groups">
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="group_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="assigned_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <addPrimaryKey tableName="user_groups" columnNames="user_id,group_id"/>
+        
+        <addForeignKeyConstraint baseTableName="user_groups" baseColumnNames="user_id"
+                                 constraintName="fk_user_groups_user"
+                                 referencedTableName="users" referencedColumnNames="user_id"
+                                 onDelete="CASCADE"/>
+        
+        <addForeignKeyConstraint baseTableName="user_groups" baseColumnNames="group_id"
+                                 constraintName="fk_user_groups_group"
+                                 referencedTableName="groups" referencedColumnNames="group_id"
+                                 onDelete="CASCADE"/>
+        
+        <createIndex tableName="user_groups" indexName="idx_user_groups_user_id">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex tableName="user_groups" indexName="idx_user_groups_group_id">
+            <column name="group_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Create Group_Roles table -->
+    <changeSet id="20250803000013-create-group-roles-table" author="identity-service">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="group_roles"/>
+            </not>
+        </preConditions>
+        <createTable tableName="group_roles">
+            <column name="group_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="assigned_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        
+        <addPrimaryKey tableName="group_roles" columnNames="group_id,role_id"/>
+        
+        <addForeignKeyConstraint baseTableName="group_roles" baseColumnNames="group_id"
+                                 constraintName="fk_group_roles_group"
+                                 referencedTableName="groups" referencedColumnNames="group_id"
+                                 onDelete="CASCADE"/>
+        
+        <addForeignKeyConstraint baseTableName="group_roles" baseColumnNames="role_id"
+                                 constraintName="fk_group_roles_role"
+                                 referencedTableName="roles" referencedColumnNames="role_id"
+                                 onDelete="CASCADE"/>
+        
+        <createIndex tableName="group_roles" indexName="idx_group_roles_group_id">
+            <column name="group_id"/>
+        </createIndex>
+        <createIndex tableName="group_roles" indexName="idx_group_roles_role_id">
+            <column name="role_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

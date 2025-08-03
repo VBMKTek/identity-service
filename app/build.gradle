@@ -15,11 +15,29 @@ application {
 }
 
 jib {
+    from {
+        image = 'openjdk:17-jre-slim'
+    }
     to {
-        image = 'preschool/identity-service:latest'
+        image = System.getenv('DOCKER_IMAGE_NAME') ?: 'ghcr.io/vbmktek/identity-service:latest'
+        tags = System.getenv('DOCKER_IMAGE_TAGS')?.split(',') ?: ['latest']
     }
     container {
-        jvmFlags = ['-Xms512m', '-Xmx1024m']
+        jvmFlags = ['-Xms256m', '-Xmx512m', '-XX:+UseContainerSupport', '-XX:MaxRAMPercentage=75.0']
         ports = ['8080']
+        environment = [
+            'SPRING_PROFILES_ACTIVE': 'docker'
+        ]
+        user = '1001:1001'
+        workingDirectory = '/app'
+        creationTime = 'USE_CURRENT_TIMESTAMP'
+    }
+    extraDirectories {
+        paths {
+            path {
+                from = file('src/main/jib')
+                into = '/app'
+            }
+        }
     }
 }

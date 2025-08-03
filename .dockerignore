@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+.github/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# Build artifacts
+**/build/
+**/target/
+**/.gradle/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md
+HELP.md
+*.md
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Test artifacts
+**/test-results/
+
+# Temporary files
+*.tmp
+*.temp

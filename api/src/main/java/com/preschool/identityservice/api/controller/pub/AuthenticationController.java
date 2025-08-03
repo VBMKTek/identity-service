@@ -4,6 +4,7 @@ import com.preschool.identityservice.api.dto.request.GetAccessTokenRequest;
 import com.preschool.identityservice.api.dto.response.AccessToken;
 import com.preschool.identityservice.api.mapper.AccessTokenResponseMapper;
 import com.preschool.identityservice.core.service.AuthenticationService;
+import com.preschool.identityservice.core.service.infra.LogoutService;
 import com.preschool.libraries.base.response.Response;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
     private final AccessTokenResponseMapper accessTokenResponseMapper;
+    private final LogoutService logoutService;
 
     @PostMapping("/login")
     @SneakyThrows
@@ -42,7 +44,17 @@ public class AuthenticationController {
     public ResponseEntity<Response<String>> logout() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authentication;
-        // TODO: Implement logout with KeycloakService
-        return ResponseEntity.ok(Response.success("Logged out successfully"));
+        
+        // Get user ID from JWT token
+        String userId = jwtAuthenticationToken.getToken().getClaimAsString("sub");
+        
+        // Revoke all tokens and sessions for the user
+        boolean logoutSuccess = logoutService.logout(userId);
+        
+        if (logoutSuccess) {
+            return ResponseEntity.ok(Response.success("Logged out successfully"));
+        } else {
+            throw new RuntimeException("Logout failed");
+        }
     }
 }

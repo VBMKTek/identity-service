@@ -4,7 +4,12 @@ import com.preschool.identityservice.core.data.*;
 import java.util.List;
 import java.util.Optional;
 
-public interface KeycloakService {
+/**
+ * Service interface for external identity provider operations (Keycloak)
+ * This interface abstracts the external identity provider from the core business logic
+ */
+public interface ExternalIdentityProviderService {
+    
     Optional<AccessTokenData> getAccessToken(String username, String password);
 
     UserData createUser(String username, String email, String password);
