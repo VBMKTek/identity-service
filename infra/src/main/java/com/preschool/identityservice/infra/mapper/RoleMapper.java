@@ -1,6 +1,6 @@
 package com.preschool.identityservice.infra.mapper;
 
-import com.preschool.identityservice.common.dto.request.RoleRequest;
+import com.preschool.identityservice.common.param.RoleParam;
 import com.preschool.identityservice.core.data.RoleData;
 import com.preschool.identityservice.infra.entity.RoleEntity;
 import java.util.List;
@@ -18,7 +18,7 @@ public interface RoleMapper {
     @Mapping(target = "permissions", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    RoleEntity toEntity(RoleRequest request);
+    RoleEntity toEntity(RoleParam request);
 
     @Mapping(target = "id", source = "roleId")
     @Mapping(target = "name", source = "roleName")
@@ -31,5 +31,6 @@ public interface RoleMapper {
     @Mapping(target = "users", ignore = true)
     @Mapping(target = "permissions", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    void updateEntityFromRequest(RoleRequest request, @MappingTarget RoleEntity entity);
+    @Mapping(target = "updatedAt", ignore = true)
+    void updateEntityFromRequest(RoleParam request, @MappingTarget RoleEntity entity);
 }

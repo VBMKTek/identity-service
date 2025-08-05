@@ -1,6 +1,6 @@
 package com.preschool.identityservice.infra.service;
 
-import com.preschool.identityservice.common.dto.request.PermissionRequest;
+import com.preschool.identityservice.common.param.PermissionParam;
 import com.preschool.identityservice.core.data.PermissionData;
 import com.preschool.identityservice.core.service.infra.PermissionDataAccessService;
 import com.preschool.identityservice.infra.entity.PermissionEntity;
@@ -23,7 +23,7 @@ public class PermissionServiceImpl implements PermissionDataAccessService {
     private final PermissionMapper permissionMapper;
 
     @Override
-    public PermissionData createPermission(PermissionRequest request) {
+    public PermissionData createPermission(PermissionParam request) {
         log.info("Creating permission with name: {}", request.getPermissionName());
 
         if (permissionRepository.existsByPermissionName(request.getPermissionName())) {
@@ -71,7 +71,7 @@ public class PermissionServiceImpl implements PermissionDataAccessService {
     }
 
     @Override
-    public PermissionData updatePermission(UUID permissionId, PermissionRequest request) {
+    public PermissionData updatePermission(UUID permissionId, PermissionParam request) {
         log.info("Updating permission with ID: {}", permissionId);
 
         PermissionEntity existingPermission =

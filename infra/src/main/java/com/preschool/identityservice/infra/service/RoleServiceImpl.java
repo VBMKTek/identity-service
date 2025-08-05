@@ -1,6 +1,6 @@
 package com.preschool.identityservice.infra.service;
 
-import com.preschool.identityservice.common.dto.request.RoleRequest;
+import com.preschool.identityservice.common.param.RoleParam;
 import com.preschool.identityservice.core.data.RoleData;
 import com.preschool.identityservice.core.service.infra.RoleDataAccessService;
 import com.preschool.identityservice.infra.entity.PermissionEntity;
@@ -26,7 +26,7 @@ public class RoleServiceImpl implements RoleDataAccessService {
     private final RoleMapper roleMapper;
 
     @Override
-    public RoleData createRole(RoleRequest request) {
+    public RoleData createRole(RoleParam request) {
         log.info("Creating role with name: {}", request.getRoleName());
 
         if (roleRepository.existsByRoleName(request.getRoleName())) {
@@ -79,7 +79,7 @@ public class RoleServiceImpl implements RoleDataAccessService {
     }
 
     @Override
-    public RoleData updateRole(UUID roleId, RoleRequest request) {
+    public RoleData updateRole(UUID roleId, RoleParam request) {
         log.info("Updating role with ID: {}", roleId);
 
         RoleEntity existingRole =

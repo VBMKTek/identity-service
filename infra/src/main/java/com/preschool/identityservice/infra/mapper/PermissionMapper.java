@@ -1,6 +1,6 @@
 package com.preschool.identityservice.infra.mapper;
 
-import com.preschool.identityservice.common.dto.request.PermissionRequest;
+import com.preschool.identityservice.common.param.PermissionParam;
 import com.preschool.identityservice.core.data.PermissionData;
 import com.preschool.identityservice.infra.entity.PermissionEntity;
 import java.util.List;
@@ -15,7 +15,7 @@ public interface PermissionMapper {
     @Mapping(target = "roles", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    PermissionEntity toEntity(PermissionRequest request);
+    PermissionEntity toEntity(PermissionParam request);
 
     @Mapping(target = "roles", ignore = true)
     PermissionData toData(PermissionEntity entity);
@@ -25,5 +25,6 @@ public interface PermissionMapper {
     @Mapping(target = "permissionId", ignore = true)
     @Mapping(target = "roles", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
-    void updateEntityFromRequest(PermissionRequest request, @MappingTarget PermissionEntity entity);
+    @Mapping(target = "updatedAt", ignore = true)
+    void updateEntityFromRequest(PermissionParam request, @MappingTarget PermissionEntity entity);
 }

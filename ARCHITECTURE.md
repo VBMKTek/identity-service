@@ -41,12 +41,9 @@ This document outlines the comprehensive refactoring performed to implement clea
 - **Container Registry**: Automated image publishing to GitHub Container Registry
 
 ### 7. Code Cleanup
-- **Unused DTOs**: Removed unused Request classes:
-  - `AssignGroupPermissionRequest`
-  - `AssignGroupRequest`
-  - `AssignUserPermissionRequest`
-  - `CreateUserRequest`
+- **Unused DTOs**: Removed unused Request classes to reduce codebase bloat
 - **Duplicate Files**: Eliminated duplicate controllers and maintained single source of truth
+- **Build Artifacts**: Cleaned up generated bin/ directories
 
 ## Current Architecture
 

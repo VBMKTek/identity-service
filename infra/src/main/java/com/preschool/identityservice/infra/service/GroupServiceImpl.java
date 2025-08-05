@@ -1,6 +1,6 @@
 package com.preschool.identityservice.infra.service;
 
-import com.preschool.identityservice.common.dto.request.GroupRequest;
+import com.preschool.identityservice.common.param.GroupParam;
 import com.preschool.identityservice.core.data.GroupData;
 import com.preschool.identityservice.core.data.UserData;
 import com.preschool.identityservice.core.service.infra.GroupDataAccessService;
@@ -32,7 +32,7 @@ public class GroupServiceImpl implements GroupDataAccessService {
     private final UserMapper userMapper;
 
     @Override
-    public GroupData createGroup(GroupRequest request) {
+    public GroupData createGroup(GroupParam request) {
         log.info("Creating group with name: {}", request.getGroupName());
 
         if (groupRepository.existsByGroupName(request.getGroupName())) {
@@ -90,7 +90,7 @@ public class GroupServiceImpl implements GroupDataAccessService {
     }
 
     @Override
-    public GroupData updateGroup(UUID groupId, GroupRequest request) {
+    public GroupData updateGroup(UUID groupId, GroupParam request) {
         log.info("Updating group with ID: {}", groupId);
 
         GroupEntity existingGroup =

@@ -1,6 +1,6 @@
 package com.preschool.identityservice.infra.service;
 
-import com.preschool.identityservice.common.dto.request.UserRequest;
+import com.preschool.identityservice.common.param.UserParam;
 import com.preschool.identityservice.core.data.UserData;
 import com.preschool.identityservice.core.service.infra.UserDataAccessService;
 import com.preschool.identityservice.infra.entity.RoleEntity;
@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserDataAccessService {
     private final UserMapper userMapper;
 
     @Override
-    public UserData createUser(UserRequest request) {
+    public UserData createUser(UserParam request) {
         log.info("Creating user with username: {}", request.getUsername());
 
         // Check if user already exists
@@ -96,7 +96,7 @@ public class UserServiceImpl implements UserDataAccessService {
     }
 
     @Override
-    public UserData updateUser(UUID userId, UserRequest request) {
+    public UserData updateUser(UUID userId, UserParam request) {
         log.info("Updating user with ID: {}", userId);
 
         UserEntity existingUser =
