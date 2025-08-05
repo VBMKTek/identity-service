@@ -6,18 +6,16 @@ import com.preschool.identityservice.core.data.UserData;
 import com.preschool.identityservice.core.service.infra.JwtDataAccessService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-
 /**
- * JWT data access service implementation
- * Handles JWT token generation, verification and management
+ * JWT data access service implementation Handles JWT token generation, verification and management
  */
 @Service
 @Slf4j
@@ -27,7 +25,7 @@ public class JwtDataAccessServiceImpl implements JwtDataAccessService {
     private final int accessTokenExpirationMinutes;
     private final int refreshTokenExpirationDays;
     private final String issuer;
-    
+
     // In-memory token blacklist (in production, use Redis or database)
     private final Set<String> revokedTokens = new HashSet<>();
 
@@ -36,7 +34,7 @@ public class JwtDataAccessServiceImpl implements JwtDataAccessService {
             @Value("${application.jwt.access-token-expiration:60}") int accessTokenExpirationMinutes,
             @Value("${application.jwt.refresh-token-expiration:7}") int refreshTokenExpirationDays,
             @Value("${application.jwt.issuer:identity-service}") String issuer) {
-        
+
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         this.accessTokenExpirationMinutes = accessTokenExpirationMinutes;
         this.refreshTokenExpirationDays = refreshTokenExpirationDays;
@@ -60,25 +58,27 @@ public class JwtDataAccessServiceImpl implements JwtDataAccessService {
         claims.put("token_type", "access");
 
         // Generate access token
-        String accessToken = Jwts.builder()
-                .setClaims(claims)
-                .setSubject(userData.getUsername())
-                .setIssuer(issuer)
-                .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(accessExpiry))
-                .signWith(secretKey, SignatureAlgorithm.HS256)
-                .compact();
+        String accessToken =
+                Jwts.builder()
+                        .setClaims(claims)
+                        .setSubject(userData.getUsername())
+                        .setIssuer(issuer)
+                        .setIssuedAt(Date.from(now))
+                        .setExpiration(Date.from(accessExpiry))
+                        .signWith(secretKey, SignatureAlgorithm.HS256)
+                        .compact();
 
         // Generate refresh token
-        String refreshToken = Jwts.builder()
-                .setSubject(userData.getUsername())
-                .setIssuer(issuer)
-                .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(refreshExpiry))
-                .claim("token_type", "refresh")
-                .claim("user_id", userData.getUserId().toString())
-                .signWith(secretKey, SignatureAlgorithm.HS256)
-                .compact();
+        String refreshToken =
+                Jwts.builder()
+                        .setSubject(userData.getUsername())
+                        .setIssuer(issuer)
+                        .setIssuedAt(Date.from(now))
+                        .setExpiration(Date.from(refreshExpiry))
+                        .claim("token_type", "refresh")
+                        .claim("user_id", userData.getUserId().toString())
+                        .signWith(secretKey, SignatureAlgorithm.HS256)
+                        .compact();
 
         return TokenData.builder()
                 .accessToken(accessToken)
@@ -99,23 +99,17 @@ public class JwtDataAccessServiceImpl implements JwtDataAccessService {
         try {
             // Check if token is revoked
             if (isTokenRevoked(token)) {
-                return JwtVerificationData.builder()
-                        .valid(false)
-                        .error("Token has been revoked")
-                        .build();
+                return JwtVerificationData.builder().valid(false).error("Token has been revoked").build();
             }
 
             // Parse and verify token
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+            Claims claims =
+                    Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
 
             // Extract user information
             String userIdStr = claims.get("user_id", String.class);
             UUID userId = userIdStr != null ? UUID.fromString(userIdStr) : null;
-            
+
             @SuppressWarnings("unchecked")
             List<String> roles = claims.get("roles", List.class);
             @SuppressWarnings("unchecked")
@@ -136,28 +130,16 @@ public class JwtDataAccessServiceImpl implements JwtDataAccessService {
 
         } catch (ExpiredJwtException e) {
             log.warn("JWT token expired: {}", e.getMessage());
-            return JwtVerificationData.builder()
-                    .valid(false)
-                    .error("Token expired")
-                    .build();
+            return JwtVerificationData.builder().valid(false).error("Token expired").build();
         } catch (MalformedJwtException e) {
             log.warn("Malformed JWT token: {}", e.getMessage());
-            return JwtVerificationData.builder()
-                    .valid(false)
-                    .error("Malformed token")
-                    .build();
+            return JwtVerificationData.builder().valid(false).error("Malformed token").build();
         } catch (SecurityException e) {
             log.warn("Invalid JWT signature: {}", e.getMessage());
-            return JwtVerificationData.builder()
-                    .valid(false)
-                    .error("Invalid token signature")
-                    .build();
+            return JwtVerificationData.builder().valid(false).error("Invalid token signature").build();
         } catch (Exception e) {
             log.error("Error verifying JWT token", e);
-            return JwtVerificationData.builder()
-                    .valid(false)
-                    .error("Token verification failed")
-                    .build();
+            return JwtVerificationData.builder().valid(false).error("Token verification failed").build();
         }
     }
 
@@ -165,11 +147,12 @@ public class JwtDataAccessServiceImpl implements JwtDataAccessService {
     public TokenData refreshToken(String refreshToken) {
         try {
             // Verify refresh token
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(refreshToken)
-                    .getBody();
+            Claims claims =
+                    Jwts.parserBuilder()
+                            .setSigningKey(secretKey)
+                            .build()
+                            .parseClaimsJws(refreshToken)
+                            .getBody();
 
             // Check if it's a refresh token
             String tokenType = claims.get("token_type", String.class);
@@ -183,11 +166,12 @@ public class JwtDataAccessServiceImpl implements JwtDataAccessService {
             UUID userId = UUID.fromString(userIdStr);
 
             // Create minimal UserData for token generation
-            UserData userData = UserData.builder()
-                    .userId(userId)
-                    .username(username)
-                    .email("") // TODO: Get from database if needed
-                    .build();
+            UserData userData =
+                    UserData.builder()
+                            .userId(userId)
+                            .username(username)
+                            .email("") // TODO: Get from database if needed
+                            .build();
 
             // Generate new tokens
             return generateToken(userData);
@@ -202,15 +186,12 @@ public class JwtDataAccessServiceImpl implements JwtDataAccessService {
     public void revokeToken(String token) {
         try {
             // Extract token ID or use the token itself as identifier
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
-            
+            Claims claims =
+                    Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
+
             // Add to revoked tokens set
             revokedTokens.add(token);
-            
+
             log.info("Token revoked for user: {}", claims.getSubject());
         } catch (Exception e) {
             log.error("Error revoking token", e);

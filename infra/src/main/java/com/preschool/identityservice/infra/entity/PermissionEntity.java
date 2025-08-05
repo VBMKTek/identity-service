@@ -1,14 +1,13 @@
 package com.preschool.identityservice.infra.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.UuidGenerator;
-
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "permissions")

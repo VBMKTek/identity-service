@@ -5,8 +5,6 @@ public class ApplicationConstants {
         "/v1/authentication/", "/v1/authentication/internal/**", "/v1/authentication/login",
         //        "/v1/authentication/logout"
     };
-    
-    public static final String[] ADMIN_URLS = {
-        "/v1/admin/**"
-    };
+
+    public static final String[] ADMIN_URLS = {"/v1/admin/**"};
 }

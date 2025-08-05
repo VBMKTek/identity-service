@@ -6,15 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Request for refreshing JWT token
- */
+/** Request for refreshing JWT token */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class RefreshTokenRequest {
-    
+
     @NotBlank(message = "Refresh token cannot be blank")
     private String refreshToken;
 }

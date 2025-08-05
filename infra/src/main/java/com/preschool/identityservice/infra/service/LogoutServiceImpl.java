@@ -8,9 +8,7 @@ import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.springframework.stereotype.Service;
 
-/**
- * Implementation of LogoutService for Keycloak integration
- */
+/** Implementation of LogoutService for Keycloak integration */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -24,10 +22,10 @@ public class LogoutServiceImpl implements LogoutService {
         log.info("Logging out user: {}", userId);
         try {
             RealmResource realmResource = keycloak.realm(keycloakProperties.getRealm());
-            
+
             // Logout user from Keycloak (revoke all sessions)
             realmResource.users().get(userId).logout();
-            
+
             log.info("User logged out successfully: {}", userId);
             return true;
         } catch (Exception e) {
@@ -55,16 +53,21 @@ public class LogoutServiceImpl implements LogoutService {
         log.info("Revoking all sessions for user: {}", userId);
         try {
             RealmResource realmResource = keycloak.realm(keycloakProperties.getRealm());
-            
+
             // Get all sessions for the user and revoke them
-            realmResource.users().get(userId).getUserSessions().forEach(userSession -> {
-                try {
-                    realmResource.deleteSession(userSession.getId());
-                } catch (Exception e) {
-                    log.warn("Failed to delete session {}: {}", userSession.getId(), e.getMessage());
-                }
-            });
-            
+            realmResource
+                    .users()
+                    .get(userId)
+                    .getUserSessions()
+                    .forEach(
+                            userSession -> {
+                                try {
+                                    realmResource.deleteSession(userSession.getId());
+                                } catch (Exception e) {
+                                    log.warn("Failed to delete session {}: {}", userSession.getId(), e.getMessage());
+                                }
+                            });
+
             log.info("All sessions revoked for user: {}", userId);
             return true;
         } catch (Exception e) {

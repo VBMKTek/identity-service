@@ -6,15 +6,14 @@ import com.preschool.identityservice.common.param.UserParam;
 import com.preschool.identityservice.core.data.UserData;
 import com.preschool.identityservice.core.service.UserBusinessService;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/admin/users")
@@ -64,8 +63,7 @@ public class AdminUserController {
 
     @PutMapping("/{userId}")
     public ResponseEntity<UserData> updateUser(
-            @PathVariable UUID userId,
-            @Valid @RequestBody UserRequest request) {
+            @PathVariable UUID userId, @Valid @RequestBody UserRequest request) {
         log.info("Admin updating user: {}", userId);
         UserParam param = userMapper.requestToParam(request);
         UserData userData = userBusinessService.updateUser(userId, param);
@@ -81,8 +79,7 @@ public class AdminUserController {
 
     @PostMapping("/{userId}/roles/{roleId}")
     public ResponseEntity<Void> assignRoleToUser(
-            @PathVariable UUID userId,
-            @PathVariable UUID roleId) {
+            @PathVariable UUID userId, @PathVariable UUID roleId) {
         log.info("Admin assigning role {} to user {}", roleId, userId);
         userBusinessService.assignRoleToUser(userId, roleId);
         return ResponseEntity.ok().build();
@@ -90,8 +87,7 @@ public class AdminUserController {
 
     @DeleteMapping("/{userId}/roles/{roleId}")
     public ResponseEntity<Void> removeRoleFromUser(
-            @PathVariable UUID userId,
-            @PathVariable UUID roleId) {
+            @PathVariable UUID userId, @PathVariable UUID roleId) {
         log.info("Admin removing role {} from user {}", roleId, userId);
         userBusinessService.removeRoleFromUser(userId, roleId);
         return ResponseEntity.ok().build();

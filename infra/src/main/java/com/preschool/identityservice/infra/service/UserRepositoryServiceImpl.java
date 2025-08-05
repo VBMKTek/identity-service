@@ -4,17 +4,14 @@ import com.preschool.identityservice.core.data.UserData;
 import com.preschool.identityservice.core.service.infra.UserRepositoryService;
 import com.preschool.identityservice.infra.mapper.UserMapper;
 import com.preschool.identityservice.infra.repository.UserRepository;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-/**
- * Implementation of UserRepositoryService for database operations
- */
+/** Implementation of UserRepositoryService for database operations */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -25,33 +22,27 @@ public class UserRepositoryServiceImpl implements UserRepositoryService {
 
     @Override
     public Optional<UserData> findByKeycloakId(String keycloakId) {
-        return userRepository.findByKeycloakId(keycloakId)
-                .map(userMapper::toData);
+        return userRepository.findByKeycloakId(keycloakId).map(userMapper::toData);
     }
 
     @Override
     public Optional<UserData> findByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .map(userMapper::toData);
+        return userRepository.findByUsername(username).map(userMapper::toData);
     }
 
     @Override
     public Optional<UserData> findByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .map(userMapper::toData);
+        return userRepository.findByEmail(email).map(userMapper::toData);
     }
 
     @Override
     public Optional<UserData> findById(UUID userId) {
-        return userRepository.findById(userId)
-                .map(userMapper::toData);
+        return userRepository.findById(userId).map(userMapper::toData);
     }
 
     @Override
     public List<UserData> findAll() {
-        return userRepository.findAll().stream()
-                .map(userMapper::toData)
-                .toList();
+        return userRepository.findAll().stream().map(userMapper::toData).toList();
     }
 
     @Override
@@ -88,8 +79,7 @@ public class UserRepositoryServiceImpl implements UserRepositoryService {
 
     @Override
     public Optional<UserData> findByIdWithRolesAndPermissions(UUID userId) {
-        return userRepository.findByIdWithRolesAndPermissions(userId)
-                .map(userMapper::toData);
+        return userRepository.findByIdWithRolesAndPermissions(userId).map(userMapper::toData);
     }
 
     @Override
@@ -97,8 +87,7 @@ public class UserRepositoryServiceImpl implements UserRepositoryService {
         // This would require a custom query or method in the repository
         // For now, we'll implement a simple version
         return userRepository.findAll().stream()
-                .filter(user -> user.getRoles().stream()
-                        .anyMatch(role -> role.getRoleId().equals(roleId)))
+                .filter(user -> user.getRoles().stream().anyMatch(role -> role.getRoleId().equals(roleId)))
                 .map(userMapper::toData)
                 .toList();
     }

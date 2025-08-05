@@ -7,15 +7,14 @@ import com.preschool.identityservice.core.data.GroupData;
 import com.preschool.identityservice.core.data.UserData;
 import com.preschool.identityservice.core.service.GroupBusinessService;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/admin/groups")
@@ -58,8 +57,7 @@ public class AdminGroupController {
 
     @PutMapping("/{groupId}")
     public ResponseEntity<GroupData> updateGroup(
-            @PathVariable UUID groupId,
-            @Valid @RequestBody GroupRequest request) {
+            @PathVariable UUID groupId, @Valid @RequestBody GroupRequest request) {
         log.info("Admin updating group: {}", groupId);
         GroupParam param = groupMapper.requestToParam(request);
         GroupData groupData = groupBusinessService.updateGroup(groupId, param);
@@ -75,8 +73,7 @@ public class AdminGroupController {
 
     @PostMapping("/{groupId}/users/{userId}")
     public ResponseEntity<Void> addUserToGroup(
-            @PathVariable UUID groupId,
-            @PathVariable UUID userId) {
+            @PathVariable UUID groupId, @PathVariable UUID userId) {
         log.info("Admin adding user {} to group {}", userId, groupId);
         groupBusinessService.addUserToGroup(userId, groupId);
         return ResponseEntity.ok().build();
@@ -84,8 +81,7 @@ public class AdminGroupController {
 
     @DeleteMapping("/{groupId}/users/{userId}")
     public ResponseEntity<Void> removeUserFromGroup(
-            @PathVariable UUID groupId,
-            @PathVariable UUID userId) {
+            @PathVariable UUID groupId, @PathVariable UUID userId) {
         log.info("Admin removing user {} from group {}", userId, groupId);
         groupBusinessService.removeUserFromGroup(userId, groupId);
         return ResponseEntity.ok().build();
@@ -93,8 +89,7 @@ public class AdminGroupController {
 
     @PostMapping("/{groupId}/roles/{roleId}")
     public ResponseEntity<Void> assignRoleToGroup(
-            @PathVariable UUID groupId,
-            @PathVariable UUID roleId) {
+            @PathVariable UUID groupId, @PathVariable UUID roleId) {
         log.info("Admin assigning role {} to group {}", roleId, groupId);
         groupBusinessService.assignRoleToGroup(groupId, roleId);
         return ResponseEntity.ok().build();
@@ -102,8 +97,7 @@ public class AdminGroupController {
 
     @DeleteMapping("/{groupId}/roles/{roleId}")
     public ResponseEntity<Void> removeRoleFromGroup(
-            @PathVariable UUID groupId,
-            @PathVariable UUID roleId) {
+            @PathVariable UUID groupId, @PathVariable UUID roleId) {
         log.info("Admin removing role {} from group {}", roleId, groupId);
         groupBusinessService.removeRoleFromGroup(groupId, roleId);
         return ResponseEntity.ok().build();

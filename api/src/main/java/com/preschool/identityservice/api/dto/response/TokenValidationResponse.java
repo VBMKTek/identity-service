@@ -1,22 +1,19 @@
 package com.preschool.identityservice.api.dto.response;
 
+import java.time.Instant;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
-import java.util.List;
-
-/**
- * JWT Token validation response
- */
+/** JWT Token validation response */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class TokenValidationResponse {
-    
+
     private boolean valid;
     private String subject;
     private String username;

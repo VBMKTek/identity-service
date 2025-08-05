@@ -44,13 +44,13 @@ public class AuthenticationController {
     public ResponseEntity<Response<String>> logout() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         JwtAuthenticationToken jwtAuthenticationToken = (JwtAuthenticationToken) authentication;
-        
+
         // Get user ID from JWT token
         String userId = jwtAuthenticationToken.getToken().getClaimAsString("sub");
-        
+
         // Revoke all tokens and sessions for the user
         boolean logoutSuccess = logoutService.logout(userId);
-        
+
         if (logoutSuccess) {
             return ResponseEntity.ok(Response.success("Logged out successfully"));
         } else {

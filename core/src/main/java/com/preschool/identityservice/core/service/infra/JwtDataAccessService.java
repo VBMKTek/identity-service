@@ -5,33 +5,23 @@ import com.preschool.identityservice.core.data.TokenData;
 import com.preschool.identityservice.core.data.UserData;
 
 /**
- * Interface for JWT data access operations
- * This provides abstraction for JWT management following clean architecture
+ * Interface for JWT data access operations This provides abstraction for JWT management following
+ * clean architecture
  */
 public interface JwtDataAccessService {
-    
-    /**
-     * Generate JWT token for user
-     */
+
+    /** Generate JWT token for user */
     TokenData generateToken(UserData userData);
-    
-    /**
-     * Verify JWT token and extract claims
-     */
+
+    /** Verify JWT token and extract claims */
     JwtVerificationData verifyToken(String token);
-    
-    /**
-     * Refresh JWT token using refresh token
-     */
+
+    /** Refresh JWT token using refresh token */
     TokenData refreshToken(String refreshToken);
-    
-    /**
-     * Revoke JWT token (add to blacklist)
-     */
+
+    /** Revoke JWT token (add to blacklist) */
     void revokeToken(String token);
-    
-    /**
-     * Check if token is revoked
-     */
+
+    /** Check if token is revoked */
     boolean isTokenRevoked(String token);
 }

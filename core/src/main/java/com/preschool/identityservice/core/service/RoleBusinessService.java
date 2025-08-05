@@ -1,21 +1,20 @@
 package com.preschool.identityservice.core.service;
 
-import com.preschool.identityservice.common.param.RoleParam;
 import com.preschool.identityservice.common.exception.InvalidDataException;
+import com.preschool.identityservice.common.param.RoleParam;
 import com.preschool.identityservice.core.data.RoleData;
 import com.preschool.identityservice.core.service.infra.RoleDataAccessService;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.UUID;
-
 /**
- * Business logic service for Role operations
- * Contains all business rules and validation for role management
+ * Business logic service for Role operations Contains all business rules and validation for role
+ * management
  */
 @Service
 @Slf4j
@@ -27,13 +26,13 @@ public class RoleBusinessService {
 
     public RoleData createRole(RoleParam param) {
         log.info("Creating role with name: {}", param.getRoleName());
-        
+
         // Business validation
         validateRoleCreation(param);
-        
+
         RoleData result = roleDataAccessService.createRole(param);
         log.info("Role created successfully with ID: {}", result.getRoleId());
-        
+
         return result;
     }
 
@@ -57,39 +56,39 @@ public class RoleBusinessService {
 
     public RoleData updateRole(UUID roleId, RoleParam param) {
         log.info("Updating role with ID: {}", roleId);
-        
+
         // Business validation
         validateRoleUpdate(param);
-        
+
         RoleData result = roleDataAccessService.updateRole(roleId, param);
         log.info("Role updated successfully with ID: {}", roleId);
-        
+
         return result;
     }
 
     public void deleteRole(UUID roleId) {
         log.info("Deleting role with ID: {}", roleId);
-        
+
         // Business validation - check if role is being used
         validateRoleDeletion(roleId);
-        
+
         roleDataAccessService.deleteRole(roleId);
         log.info("Role deleted successfully with ID: {}", roleId);
     }
 
     public void assignPermissionToRole(UUID roleId, UUID permissionId) {
         log.info("Assigning permission {} to role {}", permissionId, roleId);
-        
+
         // Business validation
         validatePermissionAssignment(roleId, permissionId);
-        
+
         roleDataAccessService.assignPermissionToRole(roleId, permissionId);
         log.info("Permission assigned successfully");
     }
 
     public void removePermissionFromRole(UUID roleId, UUID permissionId) {
         log.info("Removing permission {} from role {}", permissionId, roleId);
-        
+
         roleDataAccessService.removePermissionFromRole(roleId, permissionId);
         log.info("Permission removed successfully");
     }
@@ -108,7 +107,7 @@ public class RoleBusinessService {
         if (!StringUtils.hasText(param.getDescription())) {
             throw new InvalidDataException("Role description cannot be empty");
         }
-        
+
         // Add more business rules as needed
         if (param.getRoleName().length() < 3) {
             throw new InvalidDataException("Role name must be at least 3 characters long");

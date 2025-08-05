@@ -1,0 +1,198 @@
+name: CI/CD - UAT Environment
+
+on:
+  push:
+    branches: [ release/* ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      deploy_uat:
+        description: 'Deploy to UAT'
+        required: true
+        default: 'true'
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  ENVIRONMENT: uat
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Run Tests
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
+    - name: Run tests
+      run: ./gradlew test
+      
+    - name: Run integration tests
+      run: ./gradlew integrationTest || true
+      
+    - name: Generate test report
+      uses: dorny/test-reporter@v1
+      if: success() || failure()
+      with:
+        name: Gradle Tests - UAT
+        path: '**/build/test-results/test/TEST-*.xml'
+        reporter: java-junit
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-uat
+        path: '**/build/test-results/test/TEST-*.xml'
+
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
+    - name: Build application
+      run: ./gradlew build -x test
+      
+    - name: Run dependency check
+      run: ./gradlew dependencyCheckAnalyze || true
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: [test, security-scan]
+    name: Build and Push Docker Image
+    
+    permissions:
+      contents: read
+      packages: write
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
+    - name: Build application
+      run: ./gradlew build -x test
+      
+    - name: Set up Docker registry authentication
+      run: |
+        echo "${{ secrets.GHCR_PAT }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+      
+    - name: Generate version tag
+      id: version
+      run: |
+        TIMESTAMP=$(date +%Y%m%d.%H%M)
+        SHORT_SHA=${GITHUB_SHA:0:8}
+        VERSION_TAG="uat-${TIMESTAMP}-${SHORT_SHA}"
+        echo "version_tag=${VERSION_TAG}" >> $GITHUB_OUTPUT
+        echo "timestamp=${TIMESTAMP}" >> $GITHUB_OUTPUT
+        
+    - name: Build and push Docker image with Jib
+      env:
+        DOCKER_IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version_tag }}
+      run: |
+        ./gradlew jib \
+          -Djib.to.auth.username="${{ github.actor }}" \
+          -Djib.to.auth.password="${{ secrets.GHCR_PAT }}"
+          
+    - name: Image summary
+      run: |
+        echo "## 🚀 UAT Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+        echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Environment | UAT |" >> $GITHUB_STEP_SUMMARY
+        echo "| Image | \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version_tag }}\` |" >> $GITHUB_STEP_SUMMARY
+        echo "| Latest Tag | \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:uat-latest\` |" >> $GITHUB_STEP_SUMMARY
+        echo "| Build Time | ${{ steps.version.outputs.timestamp }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Commit | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+
+  deploy-uat:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    name: Deploy to UAT Environment
+    if: github.event.inputs.deploy_uat == 'true' || startsWith(github.ref, 'refs/heads/release/')
+    
+    environment: uat
+    
+    steps:
+    - name: Deploy to UAT
+      run: |
+        echo "🚀 Deploying identity-service to UAT environment..."
+        echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:uat-latest"
+        # Add your UAT deployment logic here
+        # kubectl apply -f k8s/uat/ --namespace=uat
+        # kubectl set image deployment/identity-service identity-service=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:uat-latest -n uat
+        
+    - name: Health check
+      run: |
+        echo "🔍 Performing health check..."
+        # Add health check logic here
+        # curl -f http://uat.example.com/api/identity-service/actuator/health || exit 1
+        
+    - name: Run smoke tests
+      run: |
+        echo "🧪 Running smoke tests..."
+        # Add smoke test logic here
+        # npm run test:smoke:uat || exit 1

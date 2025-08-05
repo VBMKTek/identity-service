@@ -1,22 +1,21 @@
 package com.preschool.identityservice.core.service;
 
-import com.preschool.identityservice.common.param.GroupParam;
 import com.preschool.identityservice.common.exception.InvalidDataException;
+import com.preschool.identityservice.common.param.GroupParam;
 import com.preschool.identityservice.core.data.GroupData;
 import com.preschool.identityservice.core.data.UserData;
 import com.preschool.identityservice.core.service.infra.GroupDataAccessService;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.UUID;
-
 /**
- * Business logic service for Group operations
- * Contains all business rules and validation for group management
+ * Business logic service for Group operations Contains all business rules and validation for group
+ * management
  */
 @Service
 @Slf4j
@@ -28,13 +27,13 @@ public class GroupBusinessService {
 
     public GroupData createGroup(GroupParam param) {
         log.info("Creating group with name: {}", param.getGroupName());
-        
+
         // Business validation
         validateGroupCreation(param);
-        
+
         GroupData result = groupDataAccessService.createGroup(param);
         log.info("Group created successfully with ID: {}", result.getGroupId());
-        
+
         return result;
     }
 
@@ -58,56 +57,56 @@ public class GroupBusinessService {
 
     public GroupData updateGroup(UUID groupId, GroupParam param) {
         log.info("Updating group with ID: {}", groupId);
-        
+
         // Business validation
         validateGroupUpdate(param);
-        
+
         GroupData result = groupDataAccessService.updateGroup(groupId, param);
         log.info("Group updated successfully with ID: {}", groupId);
-        
+
         return result;
     }
 
     public void deleteGroup(UUID groupId) {
         log.info("Deleting group with ID: {}", groupId);
-        
+
         // Business validation - check if group has users
         validateGroupDeletion(groupId);
-        
+
         groupDataAccessService.deleteGroup(groupId);
         log.info("Group deleted successfully with ID: {}", groupId);
     }
 
     public void addUserToGroup(UUID userId, UUID groupId) {
         log.info("Adding user {} to group {}", userId, groupId);
-        
+
         // Business validation
         validateUserGroupOperation(userId, groupId);
-        
+
         groupDataAccessService.addUserToGroup(userId, groupId);
         log.info("User added to group successfully");
     }
 
     public void removeUserFromGroup(UUID userId, UUID groupId) {
         log.info("Removing user {} from group {}", userId, groupId);
-        
+
         groupDataAccessService.removeUserFromGroup(userId, groupId);
         log.info("User removed from group successfully");
     }
 
     public void assignRoleToGroup(UUID groupId, UUID roleId) {
         log.info("Assigning role {} to group {}", roleId, groupId);
-        
+
         // Business validation
         validateRoleGroupOperation(groupId, roleId);
-        
+
         groupDataAccessService.assignRoleToGroup(groupId, roleId);
         log.info("Role assigned to group successfully");
     }
 
     public void removeRoleFromGroup(UUID groupId, UUID roleId) {
         log.info("Removing role {} from group {}", roleId, groupId);
-        
+
         groupDataAccessService.removeRoleFromGroup(groupId, roleId);
         log.info("Role removed from group successfully");
     }
@@ -132,7 +131,7 @@ public class GroupBusinessService {
         if (!StringUtils.hasText(param.getDescription())) {
             throw new InvalidDataException("Group description cannot be empty");
         }
-        
+
         // Add more business rules as needed
         if (param.getGroupName().length() < 3) {
             throw new InvalidDataException("Group name must be at least 3 characters long");
@@ -152,7 +151,8 @@ public class GroupBusinessService {
         // Check if group has users
         List<UserData> usersInGroup = groupDataAccessService.getUsersByGroup(groupId);
         if (!usersInGroup.isEmpty()) {
-            throw new InvalidDataException("Cannot delete group that contains users. Remove all users first.");
+            throw new InvalidDataException(
+                    "Cannot delete group that contains users. Remove all users first.");
         }
     }
 

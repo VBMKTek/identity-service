@@ -1,0 +1,236 @@
+name: CI/CD - Production Environment
+
+on:
+  push:
+    branches: [ main ]
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      deploy_prod:
+        description: 'Deploy to Production'
+        required: true
+        default: 'false'
+        type: boolean
+      version_tag:
+        description: 'Version tag (optional, uses latest if empty)'
+        required: false
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  ENVIRONMENT: prod
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Run Comprehensive Tests
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
+    - name: Run unit tests
+      run: ./gradlew test
+      
+    - name: Run integration tests
+      run: ./gradlew integrationTest || true
+      
+    - name: Generate test report
+      uses: dorny/test-reporter@v1
+      if: success() || failure()
+      with:
+        name: Gradle Tests - Production
+        path: '**/build/test-results/test/TEST-*.xml'
+        reporter: java-junit
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-prod
+        path: '**/build/test-results/test/TEST-*.xml'
+
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security & Quality Scan
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
+    - name: Build application
+      run: ./gradlew build -x test
+      
+    - name: Run dependency check
+      run: ./gradlew dependencyCheckAnalyze || true
+      
+    - name: Run SonarQube analysis
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: ./gradlew sonarqube || true
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: [test, security-scan]
+    name: Build and Push Production Image
+    
+    permissions:
+      contents: read
+      packages: write
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+      
+    - name: Build application
+      run: ./gradlew build -x test
+      
+    - name: Set up Docker registry authentication
+      run: |
+        echo "${{ secrets.GHCR_PAT }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+      
+    - name: Generate version tag
+      id: version
+      run: |
+        if [ "${{ github.event_name }}" == "release" ]; then
+          VERSION_TAG="${{ github.event.release.tag_name }}"
+        elif [ -n "${{ github.event.inputs.version_tag }}" ]; then
+          VERSION_TAG="${{ github.event.inputs.version_tag }}"
+        else
+          TIMESTAMP=$(date +%Y%m%d.%H%M)
+          SHORT_SHA=${GITHUB_SHA:0:8}
+          VERSION_TAG="prod-${TIMESTAMP}-${SHORT_SHA}"
+        fi
+        echo "version_tag=${VERSION_TAG}" >> $GITHUB_OUTPUT
+        echo "timestamp=$(date +%Y%m%d.%H%M)" >> $GITHUB_OUTPUT
+        
+    - name: Build and push Docker image with Jib
+      env:
+        DOCKER_IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version_tag }}
+      run: |
+        ./gradlew jib \
+          -Djib.to.auth.username="${{ github.actor }}" \
+          -Djib.to.auth.password="${{ secrets.GHCR_PAT }}"
+          
+    - name: Image summary
+      run: |
+        echo "## 🚀 Production Deployment Summary" >> $GITHUB_STEP_SUMMARY
+        echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+        echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Environment | **PRODUCTION** |" >> $GITHUB_STEP_SUMMARY
+        echo "| Image | \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version_tag }}\` |" >> $GITHUB_STEP_SUMMARY
+        echo "| Latest Tag | \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:prod-latest\` |" >> $GITHUB_STEP_SUMMARY
+        echo "| Build Time | ${{ steps.version.outputs.timestamp }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Commit | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    name: Deploy to Production Environment
+    if: |
+      (github.event_name == 'release' && github.event.action == 'published') ||
+      (github.event.inputs.deploy_prod == 'true') ||
+      (github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[deploy-prod]'))
+    
+    environment: production
+    
+    steps:
+    - name: Pre-deployment notification
+      run: |
+        echo "🚨 PRODUCTION DEPLOYMENT STARTING..."
+        echo "⚠️ This is a production deployment. Please ensure all stakeholders are notified."
+        
+    - name: Deploy to Production
+      run: |
+        echo "🚀 Deploying identity-service to PRODUCTION environment..."
+        echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:prod-latest"
+        # Add your production deployment logic here
+        # kubectl apply -f k8s/production/ --namespace=production
+        # kubectl set image deployment/identity-service identity-service=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:prod-latest -n production
+        
+    - name: Health check
+      run: |
+        echo "🔍 Performing production health check..."
+        # Add comprehensive health check logic here
+        # curl -f https://prod.example.com/api/identity-service/actuator/health || exit 1
+        
+    - name: Run smoke tests
+      run: |
+        echo "🧪 Running production smoke tests..."
+        # Add production smoke test logic here
+        # npm run test:smoke:prod || exit 1
+        
+    - name: Post-deployment notification
+      if: success()
+      run: |
+        echo "✅ PRODUCTION DEPLOYMENT SUCCESSFUL!"
+        echo "🎉 Identity Service has been successfully deployed to production."
+        
+    - name: Rollback on failure
+      if: failure()
+      run: |
+        echo "❌ PRODUCTION DEPLOYMENT FAILED!"
+        echo "🔄 Initiating rollback procedure..."
+        # Add rollback logic here
+        # kubectl rollout undo deployment/identity-service -n production

@@ -6,15 +6,14 @@ import com.preschool.identityservice.common.param.RoleParam;
 import com.preschool.identityservice.core.data.RoleData;
 import com.preschool.identityservice.core.service.RoleBusinessService;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/admin/roles")
@@ -57,8 +56,7 @@ public class AdminRoleController {
 
     @PutMapping("/{roleId}")
     public ResponseEntity<RoleData> updateRole(
-            @PathVariable UUID roleId,
-            @Valid @RequestBody RoleRequest request) {
+            @PathVariable UUID roleId, @Valid @RequestBody RoleRequest request) {
         log.info("Admin updating role: {}", roleId);
         RoleParam param = roleMapper.requestToParam(request);
         RoleData roleData = roleBusinessService.updateRole(roleId, param);
@@ -74,8 +72,7 @@ public class AdminRoleController {
 
     @PostMapping("/{roleId}/permissions/{permissionId}")
     public ResponseEntity<Void> assignPermissionToRole(
-            @PathVariable UUID roleId,
-            @PathVariable UUID permissionId) {
+            @PathVariable UUID roleId, @PathVariable UUID permissionId) {
         log.info("Admin assigning permission {} to role {}", permissionId, roleId);
         roleBusinessService.assignPermissionToRole(roleId, permissionId);
         return ResponseEntity.ok().build();
@@ -83,8 +80,7 @@ public class AdminRoleController {
 
     @DeleteMapping("/{roleId}/permissions/{permissionId}")
     public ResponseEntity<Void> removePermissionFromRole(
-            @PathVariable UUID roleId,
-            @PathVariable UUID permissionId) {
+            @PathVariable UUID roleId, @PathVariable UUID permissionId) {
         log.info("Admin removing permission {} from role {}", permissionId, roleId);
         roleBusinessService.removePermissionFromRole(roleId, permissionId);
         return ResponseEntity.ok().build();
@@ -96,5 +92,4 @@ public class AdminRoleController {
         List<RoleData> roles = roleBusinessService.getRolesByPermission(permissionId);
         return ResponseEntity.ok(roles);
     }
-
 }

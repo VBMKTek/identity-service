@@ -1,23 +1,20 @@
 package com.preschool.identityservice.core.data;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-
-/**
- * Token data object for core layer
- */
+/** Token data object for core layer */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class TokenData {
-    
+
     private String accessToken;
     private String refreshToken;
     private String tokenType;

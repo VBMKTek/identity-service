@@ -1,21 +1,20 @@
 package com.preschool.identityservice.core.service;
 
-import com.preschool.identityservice.common.param.UserParam;
 import com.preschool.identityservice.common.exception.InvalidDataException;
+import com.preschool.identityservice.common.param.UserParam;
 import com.preschool.identityservice.core.data.UserData;
 import com.preschool.identityservice.core.service.infra.UserDataAccessService;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.List;
-import java.util.UUID;
-
 /**
- * Business logic service for User operations
- * Contains all business rules and validation for user management
+ * Business logic service for User operations Contains all business rules and validation for user
+ * management
  */
 @Service
 @Slf4j
@@ -27,13 +26,13 @@ public class UserBusinessService {
 
     public UserData createUser(UserParam param) {
         log.info("Creating user with username: {}", param.getUsername());
-        
+
         // Business validation
         validateUserCreation(param);
-        
+
         UserData result = userDataAccessService.createUser(param);
         log.info("User created successfully with ID: {}", result.getUserId());
-        
+
         return result;
     }
 
@@ -63,22 +62,22 @@ public class UserBusinessService {
 
     public UserData updateUser(UUID userId, UserParam param) {
         log.info("Updating user with ID: {}", userId);
-        
+
         // Business validation
         validateUserUpdate(param);
-        
+
         UserData result = userDataAccessService.updateUser(userId, param);
         log.info("User updated successfully with ID: {}", userId);
-        
+
         return result;
     }
 
     public void deleteUser(UUID userId) {
         log.info("Deleting user with ID: {}", userId);
-        
+
         // Business validation - check if user can be deleted
         validateUserDeletion(userId);
-        
+
         userDataAccessService.deleteUser(userId);
         log.info("User deleted successfully with ID: {}", userId);
     }
@@ -90,20 +89,20 @@ public class UserBusinessService {
 
     public void assignRoleToUser(UUID userId, UUID roleId) {
         log.info("Assigning role {} to user {}", roleId, userId);
-        
+
         // Business validation
         validateRoleAssignment(userId, roleId);
-        
+
         userDataAccessService.assignRoleToUser(userId, roleId);
         log.info("Role assigned successfully");
     }
 
     public void removeRoleFromUser(UUID userId, UUID roleId) {
         log.info("Removing role {} from user {}", roleId, userId);
-        
+
         // Business validation
         validateRoleRemoval(userId, roleId);
-        
+
         userDataAccessService.removeRoleFromUser(userId, roleId);
         log.info("Role removed successfully");
     }
@@ -122,12 +121,12 @@ public class UserBusinessService {
         if (!StringUtils.hasText(param.getEmail())) {
             throw new InvalidDataException("Email cannot be empty");
         }
-        
+
         // Add more business rules as needed
         if (param.getUsername().length() < 3) {
             throw new InvalidDataException("Username must be at least 3 characters long");
         }
-        
+
         // Basic email validation
         if (!param.getEmail().contains("@")) {
             throw new InvalidDataException("Invalid email format");

@@ -5,18 +5,17 @@ import com.preschool.identityservice.core.service.infra.UserDataAccessService;
 import com.preschool.identityservice.infra.entity.UserEntity;
 import com.preschool.identityservice.infra.mapper.UserMapper;
 import com.preschool.identityservice.infra.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 /**
- * Implementation of UserDataAccessService using JPA repositories
- * This class handles the actual database operations
+ * Implementation of UserDataAccessService using JPA repositories This class handles the actual
+ * database operations
  */
 @Service
 @Slf4j
@@ -29,36 +28,31 @@ public class UserDataAccessServiceImpl implements UserDataAccessService {
     @Override
     public Optional<UserData> findByKeycloakId(String keycloakId) {
         log.debug("Finding user by Keycloak ID: {}", keycloakId);
-        return userRepository.findByKeycloakId(keycloakId)
-                .map(userMapper::toUserData);
+        return userRepository.findByKeycloakId(keycloakId).map(userMapper::toUserData);
     }
 
     @Override
     public Optional<UserData> findByUsername(String username) {
         log.debug("Finding user by username: {}", username);
-        return userRepository.findByUsername(username)
-                .map(userMapper::toUserData);
+        return userRepository.findByUsername(username).map(userMapper::toUserData);
     }
 
     @Override
     public Optional<UserData> findByEmail(String email) {
         log.debug("Finding user by email: {}", email);
-        return userRepository.findByEmail(email)
-                .map(userMapper::toUserData);
+        return userRepository.findByEmail(email).map(userMapper::toUserData);
     }
 
     @Override
     public Optional<UserData> findById(UUID userId) {
         log.debug("Finding user by ID: {}", userId);
-        return userRepository.findById(userId)
-                .map(userMapper::toUserData);
+        return userRepository.findById(userId).map(userMapper::toUserData);
     }
 
     @Override
     public Optional<UserData> findByIdWithRolesAndPermissions(UUID userId) {
         log.debug("Finding user by ID with roles and permissions: {}", userId);
-        return userRepository.findByIdWithRolesAndGroups(userId)
-                .map(userMapper::toUserData);
+        return userRepository.findByIdWithRolesAndGroups(userId).map(userMapper::toUserData);
     }
 
     @Override

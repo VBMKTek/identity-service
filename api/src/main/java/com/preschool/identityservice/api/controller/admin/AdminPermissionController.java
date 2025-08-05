@@ -6,15 +6,14 @@ import com.preschool.identityservice.common.param.PermissionParam;
 import com.preschool.identityservice.core.data.PermissionData;
 import com.preschool.identityservice.core.service.PermissionBusinessService;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/admin/permissions")
@@ -27,7 +26,8 @@ public class AdminPermissionController {
     private final PermissionMapper permissionMapper;
 
     @PostMapping
-    public ResponseEntity<PermissionData> createPermission(@Valid @RequestBody PermissionRequest request) {
+    public ResponseEntity<PermissionData> createPermission(
+            @Valid @RequestBody PermissionRequest request) {
         log.info("Admin creating permission: {}", request.getPermissionName());
         PermissionParam param = permissionMapper.requestToParam(request);
         PermissionData permissionData = permissionBusinessService.createPermission(param);
@@ -57,8 +57,7 @@ public class AdminPermissionController {
 
     @PutMapping("/{permissionId}")
     public ResponseEntity<PermissionData> updatePermission(
-            @PathVariable UUID permissionId,
-            @Valid @RequestBody PermissionRequest request) {
+            @PathVariable UUID permissionId, @Valid @RequestBody PermissionRequest request) {
         log.info("Admin updating permission: {}", permissionId);
         PermissionParam param = permissionMapper.requestToParam(request);
         PermissionData permissionData = permissionBusinessService.updatePermission(permissionId, param);
