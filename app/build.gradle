@@ -1,6 +1,6 @@
 plugins {
     id 'application'
-    id 'com.google.cloud.tools.jib' version '3.3.0'
+    id 'com.google.cloud.tools.jib' version '3.4.4'
 }
 
 dependencies {
@@ -17,6 +17,12 @@ application {
 jib {
     from {
         image = 'eclipse-temurin:21-jre-alpine'
+        platforms {
+            platform {
+                architecture = 'amd64'
+                os = 'linux'
+            }
+        }
     }
     to {
         image = System.getenv('DOCKER_IMAGE') ?: 'ghcr.io/vbmktek/identity-service:latest'
@@ -27,5 +33,7 @@ jib {
         environment = [
             'SPRING_PROFILES_ACTIVE': 'docker'
         ]
+        creationTime = 'USE_CURRENT_TIMESTAMP'
     }
+    containerizingMode = 'packaged'
 }
