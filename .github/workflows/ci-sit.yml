@@ -130,6 +130,35 @@ jobs:
           -Djib.to.image="${{ env.REGISTRY }}/${{ steps.image-name.outputs.image_name }}:${{ steps.version.outputs.version_tag }}" \
           -Djib.to.auth.username="${{ github.actor }}" \
           -Djib.to.auth.password="${{ secrets.GHCR_PAT }}"
+    
+    - name: Cleanup old images
+      run: |
+        echo "🧹 Cleaning up old SIT images..."
+        # Keep only the latest 5 SIT images
+        PACKAGE_NAME=$(echo "${{ steps.image-name.outputs.image_name }}" | cut -d'/' -f2)
+        
+        # Get all SIT tags and sort by creation date, keep only latest 5
+        echo "Fetching SIT image versions for cleanup..."
+        gh api --paginate \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: Bearer ${{ secrets.GHCR_PAT }}" \
+          "/orgs/${{ github.repository_owner }}/packages/container/${PACKAGE_NAME}/versions" \
+          --jq '.[] | select(.metadata.container.tags[]? | test("^sit-")) | {id: .id, tags: .metadata.container.tags, created_at: .created_at}' \
+          | jq -s 'sort_by(.created_at) | reverse | .[5:]' \
+          | jq -r '.[].id' \
+          | while read version_id; do
+              if [ ! -z "$version_id" ]; then
+                echo "Deleting old SIT image version: $version_id"
+                gh api \
+                  --method DELETE \
+                  -H "Accept: application/vnd.github.v3+json" \
+                  -H "Authorization: Bearer ${{ secrets.GHCR_PAT }}" \
+                  "/orgs/${{ github.repository_owner }}/packages/container/${PACKAGE_NAME}/versions/$version_id" || echo "Failed to delete version $version_id"
+              fi
+            done
+        echo "✅ Cleanup completed"
+      env:
+        GH_TOKEN: ${{ secrets.GHCR_PAT }}
           
     - name: Image summary
       run: |
